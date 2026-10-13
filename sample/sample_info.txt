@@ -1,0 +1,3 @@
+Synthetic edge (erf) data. X column = 1, Y column = 4.
+Derivative Gaussian sigma = 0.8; true FWHM = 1.88385603602.
+Signal noise std = 0.02.

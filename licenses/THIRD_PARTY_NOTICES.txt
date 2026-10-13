@@ -1,0 +1,50 @@
+﻿GaussianScan.exe に同梱しているソフトウェアと、そのライセンス
+
+GaussianScan.exe は PyInstaller で作成した実行ファイルで、次のソフトウェアを含みます。
+各ライセンスの全文は記載のフォルダにあります。
+
+Python 3.14
+    ライセンス: PSF License Agreement
+    全文: licenses/pythoncore-3.14-64_LICENSE.txt
+Tcl/Tk
+    ライセンス: BSD 型（Tcl/Tk License Terms）
+    全文: licenses/tcllicense.terms、licenses/tklicense.terms
+NumPy 2.5.3
+    ライセンス: BSD-3-Clause（同梱コンポーネントの表示を含む）
+    全文: licenses/numpy/
+SciPy 1.18.1
+    ライセンス: BSD-3-Clause（同梱コンポーネントの表示を含む）
+    全文: licenses/scipy/
+Matplotlib 3.11.2
+    ライセンス: Matplotlib License（PSF 型）、同梱フォント DejaVu・STIX
+    全文: licenses/matplotlib/
+ContourPy 1.4.0
+    ライセンス: BSD-3-Clause
+    全文: licenses/contourpy/
+Cycler 0.12.1
+    ライセンス: BSD-3-Clause
+    全文: licenses/cycler/
+fontTools 4.66.1
+    ライセンス: MIT
+    全文: licenses/fonttools/
+Kiwi 1.5.1
+    ライセンス: BSD-3-Clause
+    全文: licenses/kiwisolver/
+packaging 26.3
+    ライセンス: Apache-2.0 または BSD-2-Clause
+    全文: licenses/packaging/
+Pillow 12.3.0
+    ライセンス: MIT-CMU（HPND）
+    全文: licenses/pillow/
+pyparsing 3.3.3
+    ライセンス: MIT
+    全文: licenses/pyparsing/
+python-dateutil 2.9.0.post0
+    ライセンス: Apache-2.0 / BSD-3-Clause
+    全文: licenses/python-dateutil/
+six 1.17.0
+    ライセンス: MIT
+    全文: licenses/six/
+PyInstaller（ブートローダー） 6.22.3
+    ライセンス: GPL-2.0（ブートローダー例外付き。作成したEXEの配布は制限されない）
+    全文: licenses/pyinstaller/
