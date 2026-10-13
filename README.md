@@ -34,8 +34,15 @@ Get-FileHash .\GaussianScan.exe -Algorithm SHA256
 - 元のデータファイルは変更しません。レジストリ・PATH・既存の Python も変更しません。
 - 新しい版で保存したセッションファイル（`.gscan`）は、古い版では開けません。
 
-## ライセンス
+## 利用条件（ライセンス）
 
-EXE には Python・Tcl/Tk・NumPy・SciPy・Matplotlib などが含まれます。
+本ソフトウェアの利用条件は [LICENSE.txt](LICENSE.txt) のとおりです。要点：
+
+- 無償で利用できます（用途は問いません）。
+- 改変せず、`LICENSE.txt` と `licenses/` フォルダを同梱すれば再配布できます。
+- 改変、逆コンパイル・リバースエンジニアリングは禁止です。
+- **無保証です。本ソフトウェアの利用によって生じたいかなる損害についても、作者は一切の責任を負いません。**
+  解析結果は利用者自身の責任で確認してください。
+
+EXE には Python・Tcl/Tk・NumPy・SciPy・Matplotlib などの第三者のソフトウェアが含まれ、それぞれのライセンスが適用されます。
 一覧は [licenses/THIRD_PARTY_NOTICES.txt](licenses/THIRD_PARTY_NOTICES.txt)、全文は `licenses/` にあります。
-EXE を再配布するときは `licenses/` フォルダも一緒に配布してください。
