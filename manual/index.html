@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gaussian Scan マニュアル</title>
+<style>
+  :root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --side:#f6f8fa; --accent:#0969da; --note:#fff8c5; --warn:#ffebe9; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Yu Gothic UI","Meiryo",sans-serif; color:var(--fg); background:var(--bg); line-height:1.7; }
+  nav { position:fixed; top:0; left:0; bottom:0; width:260px; overflow-y:auto; background:var(--side); border-right:1px solid var(--line); padding:16px 14px; font-size:14px; }
+  nav h1 { font-size:17px; margin:0 0 10px; }
+  nav ol { padding-left:20px; margin:0; } nav li { margin:3px 0; }
+  nav a { color:var(--fg); text-decoration:none; } nav a:hover { color:var(--accent); text-decoration:underline; }
+  main { margin-left:260px; max-width:980px; padding:24px 36px 80px; }
+  h1 { font-size:26px; margin-top:0; } h2 { font-size:21px; margin-top:44px; padding-bottom:4px; border-bottom:1px solid var(--line); }
+  h3 { font-size:17px; margin-top:26px; }
+  img { max-width:100%; border:1px solid var(--line); border-radius:4px; margin:6px 0; }
+  table { border-collapse:collapse; margin:8px 0 14px; font-size:14px; } th, td { border:1px solid var(--line); padding:4px 10px; vertical-align:top; text-align:left; }
+  th { background:var(--side); }
+  code, kbd { font-family:Consolas,"MS Gothic",monospace; font-size:13px; background:var(--side); padding:1px 5px; border-radius:3px; }
+  kbd { border:1px solid var(--line); }
+  .note { background:var(--note); border-left:4px solid #d4a72c; padding:8px 12px; margin:10px 0; }
+  .warn { background:var(--warn); border-left:4px solid #cf222e; padding:8px 12px; margin:10px 0; }
+  .formula { background:var(--side); padding:8px 12px; font-family:Consolas,"Cambria Math",serif; margin:8px 0; }
+  .muted { color:var(--muted); font-size:13px; }
+  @media (max-width: 800px) { nav { position:static; width:auto; border-right:none; border-bottom:1px solid var(--line); } main { margin-left:0; padding:16px; } }
+</style>
+</head>
+<body>
+<nav>
+  <h1>Gaussian Scan マニュアル</h1>
+  <ol>
+    <li><a href="#top">はじめに</a></li>
+    <li><a href="#screen">画面の構成</a></li>
+    <li><a href="#data">データの読み込み</a></li>
+    <li><a href="#analysis">解析（微分データ）</a></li>
+    <li><a href="#raw">生データの解析</a></li>
+    <li><a href="#scans">スキャンの管理</a></li>
+    <li><a href="#display">表示</a></li>
+    <li><a href="#trend">トレンド（解析値の比較）</a></li>
+    <li><a href="#save">画像・CSVの保存</a></li>
+    <li><a href="#session">セッション</a></li>
+    <li><a href="#methods">計算方法</a></li>
+    <li><a href="#faq">よくある質問・注意</a></li>
+    <li><a href="#license">利用条件</a></li>
+  </ol>
+  <p class="muted">F1 キーでいつでもこのマニュアルを開けます。入力欄の「？」ボタンは、表示中のタブの説明へ移動します。</p>
+</nav>
+<main>
+
+<h1 id="top">はじめに</h1>
+<p>Gaussian Scan は、スキャン測定データ（位置と強度）から、ビームやエッジの<strong>幅（FWHM：半値全幅）</strong>と<strong>位置</strong>を評価する Windows 用アプリです。</p>
+<ul>
+  <li>エッジ（立ち上がり）のデータを<strong>微分</strong>し、微分のピークの幅を「直接FWHM」と「Gaussianフィット」の2つの方法で求めます。</li>
+  <li>微分しない<strong>生データそのもの</strong>も、ピーク（山・谷）またはエッジ（誤差関数のフィット）として解析できます。</li>
+  <li>複数のスキャンを重ね描きし、ピーク位置や幅をそろえて比較したり、解析値をスキャンごとに並べた<strong>トレンド</strong>で比べたりできます。</li>
+  <li>読み込んだデータと設定は<strong>セッションファイル</strong>にまとめて保存し、後で開き直せます。</li>
+</ul>
+<h3>動作環境と起動</h3>
+<ul>
+  <li>Windows 10 / 11（64ビット）。Windows 11 で動作を確認しています（Windows 10 は未検証）。</li>
+  <li><code>GaussianScan.exe</code> をダブルクリックするだけで起動します。インストール、Python、インターネット接続は不要です。</li>
+  <li>起動時にライブラリを一時フォルダへ展開するため、数秒～数十秒かかることがあります。</li>
+  <li>署名のない実行ファイルのため、初回は「Windows によって PC が保護されました」と表示されることがあります。「詳細情報」→「実行」を選んでください。</li>
+  <li>元のデータファイルは変更しません。レジストリ・PATH・既存の Python も変更しません。</li>
+</ul>
+<h3>まず試す</h3>
+<ol>
+  <li>リボン「ホーム」の［2ファイルを選択…］で、付属の <code>sample\pos.txt</code> と <code>sample\xas.txt</code> を同時に選びます（列数から自動で振り分けます）。</li>
+  <li>［＋ スキャン追加］を押します。横軸1列目・縦軸4列目が初期値です。</li>
+  <li>右のグラフに生データと微分が表示され、一覧に FWHM（直接 約1.879、Gauss 約1.885）が出ます。</li>
+</ol>
+
+<h2 id="screen">画面の構成</h2>
+<img src="images/screen_main.png" alt="メイン画面">
+<table>
+  <tr><th>場所</th><th>内容</th></tr>
+  <tr><td>上部：メニューバー・リボン</td><td>すべての操作。リボンはタブ（ホーム／解析／表示／トレンド／ヘルプ）でボタンを切り替えます。</td></tr>
+  <tr><td>左上：スキャン一覧</td><td>登録したスキャンと結果（直接／Gauss／生 は FWHM、R²、注意）。複数選択、右クリックメニューあり。</td></tr>
+  <tr><td>左下：入力欄（タブ）</td><td>データ／解析／生データ／表示変換。新しく追加するスキャンの値を入力します。一覧でスキャンを選ぶと、そのスキャンの設定が入ります。</td></tr>
+  <tr><td>右上：グラフ</td><td>「スキャン」タブ：生データと微分。「トレンド（解析値）」タブ：解析値の比較。グラフの下は拡大・移動・保存のツールバー。</td></tr>
+  <tr><td>右下：詳細</td><td>選択中のスキャンの解析条件と結果の詳細、注意事項。</td></tr>
+</table>
+<p>左右の境界、一覧と入力欄の境界、グラフと詳細の境界はドラッグして大きさを変えられます。</p>
+<h3>リボン</h3>
+<table>
+  <tr><th>タブ</th><th>主なボタン</th></tr>
+  <tr><td>ホーム</td><td>ファイル選択、スキャン追加・更新・削除、セッションを開く・保存、画像・CSV保存</td></tr>
+  <tr><td>解析</td><td>選択中のスキャンの FWHM計算・ピークの向き・生データ解析の変更、一括変更、グラフで範囲を指定・範囲を全域に、スキャン値、順番・色・名前</td></tr>
+  <tr><td>表示</td><td>表示モード（両方／生データ／微分データ）、凡例、網掛け、表示範囲、ピーク中心で比較</td></tr>
+  <tr><td>トレンド</td><td>トレンドの表示、縦軸の解析値、誤差棒、トレンドCSV・画像</td></tr>
+  <tr><td>ヘルプ</td><td>このマニュアルの各章、バージョン情報</td></tr>
+</table>
+<img src="images/ribbon_home.png" alt="リボン ホーム">
+<img src="images/ribbon_analysis.png" alt="リボン 解析">
+<img src="images/ribbon_view.png" alt="リボン 表示">
+<h3>ショートカット</h3>
+<table>
+  <tr><th>キー</th><th>操作</th></tr>
+  <tr><td><kbd>F1</kbd></td><td>マニュアル</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd> / <kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>セッションを開く／保存</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>画像保存</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td>一括変更</td></tr>
+  <tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd>（一覧）</td><td>すべて選択</td></tr>
+  <tr><td><kbd>Alt</kbd>+<kbd>↑</kbd> / <kbd>↓</kbd>（一覧）</td><td>順番を上下に移動</td></tr>
+  <tr><td><kbd>Delete</kbd>（一覧）</td><td>選択を削除（確認あり）</td></tr>
+</table>
+
+<h2 id="data">データの読み込み</h2>
+<img src="images/tab_data.png" alt="入力欄 データタブ">
+<p>入力欄の「データ」タブで形式を選び、ファイルを指定して［＋ スキャン追加］を押します。別のファイルを指定して追加を繰り返すと、同じグラフに重ね描きします。</p>
+<h3>2ファイル形式（位置＋強度）</h3>
+<ul>
+  <li>位置データ（12列）と強度データ（5列）のタブ区切りファイル。同じ行どうしを対応させます。</li>
+  <li>［2ファイルをまとめて選択…］で2つを同時に選ぶと、列数から位置と強度を自動で振り分けます。</li>
+  <li>横軸列（1～12）・縦軸列（1～5）を選びます。初期値は1列目／4列目。</li>
+  <li>見出し行がある場合は、各ファイルの「ヘッダー行数」を指定します。</li>
+</ul>
+<h3>1ファイル形式（列名つき）</h3>
+<ul>
+  <li>位置と複数チャンネルが1つのファイルに入ったデータ（例：<code>POS1, Ch0, Ch1, …</code>）。</li>
+  <li>区切り（カンマ・タブ・空白）と列名の行は自動で判定します。<code>#</code> で始まる行と空行は読み飛ばします。</li>
+  <li>横軸列・縦軸列は列名のプルダウンで選びます。既定は、横軸が POS で始まる列（なければ1列目）、縦軸が値の変化幅の最も大きい列です。</li>
+  <li>別のファイルを選んでも、同じ列名があれば選んだ列を保ちます。</li>
+</ul>
+<h3>共通の書式・入力</h3>
+<ul>
+  <li>文字コード：UTF-8（BOM可）、BOM付き UTF-16、CP932（Shift_JIS）。日本語の見出し・フォルダ名も使えます。</li>
+  <li>数値：指数表記 e/E と d/D に対応。列数の不一致、数値以外、NaN、無限大はエラーにします（行番号を表示）。</li>
+  <li>横軸は昇順でも降順でも構いません（降順のまま解析し、昇順と同じ結果になります）。</li>
+  <li><strong>名前</strong>：空欄なら自動で付けます。<strong>スキャン値</strong>：トレンドの横軸に使う数値。空欄ならファイル名の最後の数値（例：<code>HeightScan_160</code> → 160）。<strong>横軸単位</strong>：グラフと詳細に表示します（単位換算はしません）。</li>
+</ul>
+<div class="note">入力欄を書き換えただけでは、登録済みのスキャンは変わりません。新規登録は［＋ スキャン追加］、選択中の1件の変更は［選択を更新（再計算）］（元ファイルを読み直します）、複数の変更は<a href="#scans">一括変更</a>を使います。</div>
+
+<h2 id="analysis">解析（微分データ）</h2>
+<img src="images/tab_analysis.png" alt="入力欄 解析タブ">
+<p>読み込んだデータ y(x) を微分し（dy/dx）、そのピークの幅を求めます。エッジのデータでは、微分したピークの FWHM がビームの幅に相当します。</p>
+<table>
+  <tr><th>項目</th><th>内容</th></tr>
+  <tr><td>ピーク</td><td>自動判定（初期値）／山型（正）／谷型（負）。自動判定は、解析範囲内の dy/dx の中央値から上へのはみ出しと下へのはみ出しの大きい方を採用します。大きい方が小さい方の2倍未満なら「判定があいまい」と注意を出します。</td></tr>
+  <tr><td>FWHM計算</td><td>両方／直接のみ／Gaussianのみ／計算しない。</td></tr>
+  <tr><td>解析下限・上限</td><td>微分データのフィッティング（FWHM を求める）範囲。空欄は全域。常に元のX座標で指定します（表示変換や表示範囲の影響を受けません）。<a href="#range">グラフから指定</a>することもできます。</td></tr>
+  <tr><td>直接FWHM背景</td><td>直接FWHM の背景値（dy/dx の単位）。初期値0。</td></tr>
+</table>
+<h3 id="range">フィッティング範囲をグラフで指定する</h3>
+<ol>
+  <li>一覧で対象のスキャンを選びます（複数可）。</li>
+  <li>リボン「解析」の［グラフで範囲を指定］（または「解析」「生データ」タブの同じボタン）を押します。ボタンが押された状態の間、範囲指定モードです。</li>
+  <li>グラフ上を<strong>左右にドラッグ</strong>します。<strong>下段（微分）</strong>でドラッグすると微分の範囲、<strong>上段（生データ）</strong>でドラッグすると生データの範囲になります。</li>
+  <li>範囲が入力欄に入り、選択中のスキャンを読み込み済みのデータからすぐ再計算します（1件でも計算できない場合は、どのスキャンも変更しません）。</li>
+  <li>もう一度ボタンを押すと終了します。［範囲を全域に］で、選択中のスキャンの範囲（微分・生データとも）を解除します。</li>
+</ol>
+<p>表示変換で左右に動かしているスキャンでも、元のX座標に直して設定します（複数選択で表示位置が異なる場合は、先頭のスキャンの座標を使います）。範囲指定モードの間は、ツールバーの拡大・移動は使えません。指定した範囲はグラフに薄く網掛けされます（上段は生データの範囲、下段は微分の範囲）。</p>
+<p>詳細欄には「微分 直接FWHM」「微分 Gaussian FWHM（± 近似標準誤差、σ、中心 ± 誤差、R²）」と、自動判定の結果（例：自動判定→山型（正）（比 51.4））を表示します。計算式は<a href="#methods">計算方法</a>を参照してください。</p>
+
+<h2 id="raw">生データの解析</h2>
+<img src="images/tab_raw.png" alt="入力欄 生データタブ">
+<p>微分の解析に加えて、微分しない生データそのものも解析できます（スキャンごとにオン・オフ）。「FWHM計算」の設定は「解析」タブと共通です。</p>
+<p><strong>範囲 下限・上限</strong>：生データ用のフィッティング範囲（元のX座標）。空欄の側は「解析」タブの範囲と同じです（両方空欄なら微分と共通の範囲）。<a href="#range">グラフ（上段）から指定</a>することもできます。</p>
+<table>
+  <tr><th>生データ解析</th><th>向いているデータ</th><th>求める値</th></tr>
+  <tr><td>なし（初期値）</td><td>―</td><td>―</td></tr>
+  <tr><td>ピーク（山・谷）</td><td>生データ自体が山・谷のデータ（ワイヤースキャン、ロッキングカーブなど）</td><td>最大（谷型は最小）の測定点、直接FWHM、Gaussianフィット（中心 ± 誤差、FWHM）</td></tr>
+  <tr><td>エッジ（立ち上がり）</td><td>段差のデータ（ナイフエッジ、スリットなど）</td><td>誤差関数（erf）のフィット：エッジ位置 ± 誤差、σ、FWHM（2.3548σ）、10–90%幅（2.5631σ）</td></tr>
+</table>
+<ul>
+  <li><strong>向き</strong>（ピークのとき）：自動判定／山型／谷型。規則は微分と同じです。</li>
+  <li><strong>背景</strong>（ピークの直接FWHM）：空欄は自動（解析範囲内の最小値、谷型は最大値）。</li>
+  <li>エッジの FWHM は、エッジを微分した Gaussian の FWHM と同じ意味です。微分しないためノイズの影響を受けにくく、付属サンプル（真値 1.883856）では 1.88373 でした（微分の Gaussian は 1.88500）。</li>
+  <li>エッジの立ち上がり全体（中心 ± 2σ）が範囲に入っていない場合は注意を表示します。</li>
+  <li>一覧の「生」列は生データの FWHM（フィットの値、なければ直接FWHM）。生データのグラフには、フィット曲線（破線）、直接FWHM（|—|）、エッジ位置（|）を描きます。</li>
+  <li><code>sample\synthetic_peak.dat</code> は生データのピーク解析を試すための合成データです（1ファイル形式、横軸 POS・縦軸 Peak、真値 FWHM 1.17741）。</li>
+</ul>
+
+<h2 id="scans">スキャンの管理</h2>
+<ul>
+  <li><strong>選択</strong>：一覧でクリック。<kbd>Ctrl</kbd>／<kbd>Shift</kbd>+クリックで複数選択、［すべて選択］または <kbd>Ctrl</kbd>+<kbd>A</kbd>。</li>
+  <li><strong>表示／非表示</strong>：「表示」列（●／○）のクリック、または［表示／非表示］。非表示のスキャンはグラフとトレンドに出ません（CSV には出ます）。</li>
+  <li><strong>順番</strong>：▲▼ または <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd>。右クリック「順番」から先頭へ・末尾へ、名前順・スキャン値順・追加した順の並べ替え。一覧の順がグラフの重ね順・凡例・トレンド（一覧の順）の順になります。</li>
+  <li><strong>色</strong>：右クリック「色」（またはリボン「解析」）。任意の色、パレット11色、自動の色（番号による）。</li>
+  <li><strong>名前・スキャン値</strong>：右クリック「名前を変更…」「スキャン値を編集…」。複数選択時のスキャン値は連番（開始値, 間隔）を設定できます。「スキャン値をファイル名から設定」で取り直せます。</li>
+  <li><strong>削除</strong>：［削除］または <kbd>Delete</kbd>（確認あり）。</li>
+</ul>
+<h3>一括変更</h3>
+<img src="images/dialog_batch.png" alt="一括変更ダイアログ">
+<p>複数のスキャンを選び、リボン「解析」または右クリックで「FWHM計算」「ピークの向き」「生データ解析」を選ぶと、その場で全員に設定します。［一括変更…］（<kbd>Ctrl</kbd>+<kbd>B</kbd>）では、チェックした項目（FWHM計算、ピークの向き、生データ解析・向き・背景・範囲、解析下限・上限、直接FWHM背景、横軸単位）をまとめて設定します。</p>
+<ul>
+  <li>読み込み済みのデータから再計算するので、元のファイルがなくても使えます。</li>
+  <li>1件でも変更できない場合（解析範囲の誤り、位置合わせに必要な結果がなくなる場合など）は、理由を表示し、どのスキャンも変更しません。</li>
+</ul>
+
+<h2 id="display">表示</h2>
+<h3>表示モード・凡例</h3>
+<p>リボン「表示」で、両方（上段に生データ、下段に微分）／生データ／微分データを切り替えます。凡例は図内／図の右外／非表示。解析範囲は、スキャンの色で薄く網掛けします（オフにできます）。微分グラフの破線は Gaussian フィット、両端に縦棒のある横線は直接FWHM です。</p>
+<h3>表示変換（入力欄「表示変換」タブ）</h3>
+<img src="images/tab_display.png" alt="入力欄 表示変換タブ">
+<p>表示だけを変えます。<strong>元データと FWHM は変えません</strong>。選択中のスキャンへ即時反映します（数値欄は Enter で確定）。複数選択中は全員に同じ変換を適用します。</p>
+<table>
+  <tr><th>正規化</th><th>内容</th></tr>
+  <tr><td>なし</td><td>元の縦軸値</td></tr>
+  <tr><td>最大値で割る</td><td>解析範囲内の最大値で割る（背景は引かない）</td></tr>
+  <tr><td>任意値で割る</td><td>「生Y除数」「微分Y除数」で割る（0 は不可、負の値は符号反転）</td></tr>
+  <tr><td>ピーク高さを1</td><td>背景を引き、背景からピークまでの振幅で割る。微分の背景は Gaussian の推定背景（なければ直接FWHM背景）、生データの背景は範囲内の最小値（谷型は最大値）。谷型は上向き・高さ1になります。</td></tr>
+</table>
+<table>
+  <tr><th>位置合わせ</th><th>内容</th></tr>
+  <tr><td>微分ピーク位置</td><td>解析範囲内の微分の最大点（谷型は最小点）を0へ</td></tr>
+  <tr><td>Gaussian中心</td><td>微分の Gaussian の中心を0へ（フィット結果が必要）</td></tr>
+  <tr><td>直接半値幅の中心</td><td>直接FWHM の左右交点の中点を0へ</td></tr>
+</table>
+<p>「追加X移動」で左右へ（正は右）、「生Y移動」「微分Y移動」で上下へ動かします。</p>
+<div class="formula">X表示 = X − 選択した中心 + 追加X移動　　Y表示 = (Y − 背景) / 除数 + Y移動</div>
+<p>［表示中をピーク中心で比較］は、表示中の全スキャンを中心0・背景0・ピーク高さ1にそろえ、微分グラフに切り替えます。［表示中を元に戻す］で解除します。</p>
+<h3>表示範囲</h3>
+<img src="images/dialog_limits.png" alt="表示範囲ダイアログ">
+<p>リボン「表示」の［設定…］で、横軸・生データY・微分Y の範囲を数値で指定します（空欄は自動、表示上の座標）。ツールバーで拡大・移動したあと［現在の表示を取り込む］を押すと、その範囲を数値にします。［自動に戻す］で解除。解析範囲とは別で、解析結果は変わりません。表示範囲は画像保存とセッションにも使います。</p>
+
+<h2 id="trend">トレンド（解析値の比較）</h2>
+<img src="images/trend.png" alt="トレンド">
+<p>右側の「トレンド（解析値）」タブで、表示中のスキャンの解析値を縦軸、スキャンを横軸に並べます。</p>
+<ul>
+  <li><strong>横軸</strong>：一覧の順（目盛りにスキャン名）／スキャン値（数値の順。空欄や数値でないスキャンは表示せず注意を出します）。「軸ラベル」に横軸の名前を入れます。</li>
+  <li><strong>縦軸の解析値</strong>（複数選択可。種類ごとに段を分けます）：
+    <ul>
+      <li>位置：微分ピーク位置、Gaussian中心、直接FWHMの中心、生データ最大点の位置、生データGaussian中心、生データエッジ位置</li>
+      <li>幅：直接FWHM、Gaussian FWHM、生データ直接FWHM・Gaussian FWHM・erf FWHM・10–90%幅</li>
+      <li>微分：微分ピーク値、Gaussian振幅　生データ：最大値・最小値・変化幅、最大点の値　R²</li>
+    </ul></li>
+  <li><strong>誤差棒</strong>：フィットの中心・FWHM の近似標準誤差。</li>
+  <li>点の色はスキャンの線の色、記号は解析値の種類です。値は既存の解析結果をそのまま並べるだけで、FWHM を計算し直すことはありません。</li>
+  <li>［CSV保存…］で、表示中のスキャンの全解析値（と近似標準誤差 <code>*_stderr</code>）を保存します。</li>
+</ul>
+
+<h2 id="save">画像・CSVの保存</h2>
+<h3>画像保存（<kbd>Ctrl</kbd>+<kbd>E</kbd>）</h3>
+<img src="images/dialog_image.png" alt="画像保存ダイアログ">
+<ul>
+  <li>対象：スキャンのグラフ／トレンド。よく使うサイズ（論文 片段・全段、スライド16:9、フルHD）から選べます。</li>
+  <li>幅×高さ（cm／inch／px）、アスペクト比（自由・4:3・3:2・16:9・1:1・画面と同じ）、解像度（dpi）、文字・線の倍率、背景の透明化。出力される画素数を表示します。</li>
+  <li>形式はファイルの拡張子（.png／.pdf／.svg）で決まります。画面の表示範囲・凡例・表示モードのまま、指定した大きさで描き直して保存します（画面の見た目は変わりません）。</li>
+  <li>小さいサイズで凡例を図の右外に置くとグラフが狭くなります。その場合は凡例を図内にするか、文字の倍率を下げてください。</li>
+</ul>
+<h3>CSV保存</h3>
+<ul>
+  <li>全スキャン（非表示も含む）の結果とデータを UTF-8（BOM付き、Excel で文字化けしない）で保存します。</li>
+  <li>先頭にスキャン別の一覧（直接FWHM、Gaussian FWHM、σ、R²、注意事項、生データの FWHM 等）。続いて各スキャンの入力設定、解析結果、データ表（x、元の y、dy/dx、フィット値、範囲フラグ、表示座標、生データのフィット値）。</li>
+  <li>計算していない／算出不可の値は空欄です。Gaussian のフィット値は全点に出力するため、解析範囲外では外挿値です。</li>
+  <li>CSV は結果の記録用です。CSV をスキャンとして読み込み直す機能はありません（続きは<a href="#session">セッション</a>で）。</li>
+</ul>
+
+<h2 id="session">セッション</h2>
+<p>［保存…］（<kbd>Ctrl</kbd>+<kbd>S</kbd>）で、現在の全スキャンを1つのファイル（拡張子 <code>.gscan</code>）に保存し、［開く…］（<kbd>Ctrl</kbd>+<kbd>O</kbd>）で開き直します。</p>
+<ul>
+  <li>保存される内容：各スキャンの読み込んだ元データ（ファイル内に埋め込み）、全設定（形式、ファイル名、列、解析条件・範囲、生データ解析・範囲、表示変換、表示／非表示、色、スキャン値、名前、一覧の順）、表示モード・凡例・網掛け、表示範囲、トレンドの設定、画像保存の設定、保存時の FWHM（照合用）。</li>
+  <li>元データを埋め込むので、元のファイルを移動・削除しても開けます。開くときは埋め込んだデータから再計算し、保存時の FWHM と一致しなければ警告します。</li>
+  <li>スキャンがある状態で開くと「置き換え」「追加」「キャンセル」を選べます。EXE のアイコンに <code>.gscan</code> をドラッグ＆ドロップしても開けます（ファイルの関連付けはしません）。</li>
+  <li>保存していない変更があるとタイトルの先頭に「*」が付き、閉じるときに確認します。保存は一時ファイル経由なので、失敗しても既存のファイルは壊れません。</li>
+  <li>壊れたファイルや他のアプリのファイルはエラーにし、現在のスキャンは変更しません。開いただけでプログラムが実行される形式（pickle）は読み込みません。</li>
+  <li>新しい版で保存したセッションは、古い版では開けません（古い版のセッションは新しい版で開けます）。</li>
+</ul>
+
+<h2 id="methods">計算方法</h2>
+<h3>微分</h3>
+<p>実際の横軸間隔を使い、不等間隔と降順に対応します。内部は3点の中央差分、両端は2次精度の片側差分。平滑化はしません。全スキャン範囲を微分してから、解析範囲内の点を FWHM の計算に使います。重複した位置や往復スキャンなど微分できない場合は、生データだけ表示し、理由を表示します。</p>
+<h3>直接FWHM（モデルを仮定しない方法）</h3>
+<ol>
+  <li>背景値 B を指定します（微分では手動、初期値0）。</li>
+  <li>解析範囲内の最大値（山型）または最小値（谷型）をピーク P とします。半値レベルは B + (P − B)/2。</li>
+  <li>ピークから左右へ進み、最初に半値に達する位置を隣接点の線形補間で求めます。直接FWHM = 右交点 − 左交点。</li>
+</ol>
+<p>3点以上と、範囲内に左右両方の交点が必要です。範囲外への外挿はしません。複数ピークで交点が増える場合は、最大ピークに最も近い左右の交点を使い、警告します。</p>
+<h3>Gaussian フィット</h3>
+<div class="formula">f(x) = B + A · exp(−(x − μ)² / (2σ²))　　FWHM = 2√(2 ln 2) · σ ≈ 2.354820045 σ</div>
+<p>背景 B、振幅 A、中心 μ、幅 σ を重みなし最小二乗で推定します（scipy.optimize.curve_fit）。異なる位置が6点以上必要です。山型では A ≥ 0、谷型では A ≤ 0。半値位置が範囲外、不安定なフィット、R² &lt; 0.9 などは警告します。<code>fwhm_stderr</code>・中心の誤差は共分散行列からの近似標準誤差で、系統誤差や微分点間の誤差相関は含みません。</p>
+<p class="muted">参考：Igor の標準 gauss の width は √2·σ で、このアプリの σ とは異なります。</p>
+<h3>エッジ（誤差関数）フィット</h3>
+<div class="formula">y = B + A · (1 + erf((x − μ) / (√2 σ))) / 2　　FWHM = 2.3548 σ　　10–90%幅 = 2√2 · erfinv(0.8) · σ ≈ 2.5631 σ</div>
+<p>A の符号で立ち上がり／立ち下がりを表します。エッジを微分すると中心 μ・幅 σ の Gaussian になるため、FWHM は微分の Gaussian の FWHM と同じ意味です。</p>
+<h3>ピークの向きの自動判定</h3>
+<p>解析範囲内のデータ（微分または生データ）の中央値 m を基準に、上へのはみ出し（最大 − m）と下へのはみ出し（m − 最小）の大きい方を採用します。比（大／小）が2未満なら「あいまい」と警告します。</p>
+
+<h2 id="faq">よくある質問・注意</h2>
+<dl>
+  <dt><strong>「左右の半値交点が解析範囲内に揃いません」と出る</strong></dt>
+  <dd>ピークの裾が範囲の外まで続いているか、背景値・ピークの向きが合っていません。解析範囲を広げる、背景値を見直す、向きを確認してください。</dd>
+  <dt><strong>自動判定で「あいまい」と出る</strong></dt>
+  <dd>ノイズだけの列や、山と谷が同程度のデータです。グラフを見て、山型・谷型を指定してください。</dd>
+  <dt><strong>直接FWHM と Gaussian FWHM が違う</strong></dt>
+  <dd>Gaussian はモデルから求めるため、形が Gaussian でないと一致しません。直接FWHM は測定点とノイズの影響を受けます。両方を比べて判断してください。</dd>
+  <dt><strong>横軸単位が異なると注意が出る</strong></dt>
+  <dd>単位の換算はしません。単位をそろえて比較してください。</dd>
+  <dt><strong>色が足りない</strong></dt>
+  <dd>自動の色は10色で循環します。右クリック「色」で個別に変えるか、区別できる名前を付けてください。</dd>
+  <dt><strong>BOMなしの UTF-16 ファイルが読めない</strong></dt>
+  <dd>判別できないため、誤った値を読み込まないようエラーにしています。UTF-8 か CP932 で保存し直してください。</dd>
+  <dt><strong>起動が遅い・警告が出る</strong></dt>
+  <dd><a href="#top">はじめに</a>を参照してください。組織のセキュリティ設定で署名のない EXE が止められる場合は、管理者に相談してください。</dd>
+</dl>
+
+<h2 id="license">利用条件</h2>
+<p>本ソフトウェアは無償で利用できます。改変せず、<code>LICENSE.txt</code> と <code>licenses</code> フォルダを同梱すれば再配布できます。改変・逆コンパイルは禁止です。<strong>無保証であり、利用によって生じたいかなる損害についても作者は一切の責任を負いません。</strong>詳しくは配布元の <code>LICENSE.txt</code> を参照してください。</p>
+<p>EXE には Python、Tcl/Tk、NumPy、SciPy、Matplotlib などの第三者のソフトウェアが含まれ、それぞれのライセンス（<code>licenses</code> フォルダ）が適用されます。</p>
+<p class="muted">このマニュアルは Gaussian Scan 2.0 に対応しています。</p>
+</main>
+</body>
+</html>

@@ -26,7 +26,7 @@
 Get-FileHash .\GaussianScan.exe -Algorithm SHA256
 ```
 
-操作方法は [使い方.txt](使い方.txt) を参照してください。
+操作方法はアプリの **F1**（ヘルプ）で開くマニュアルを参照してください。同じものが [manual/index.html](manual/index.html) にあります（ダウンロードしてブラウザで開きます）。
 `sample/` の `pos.txt` と `xas.txt`（横軸1列目・縦軸4列目）で動作を試せます（合成データ）。
 
 ## 注意
