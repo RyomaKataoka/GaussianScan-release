@@ -1,0 +1,4 @@
+synthetic_header_scan.dat: synthetic file with an instrument-style header (preamble, block table, names,
+Mode and Offset rows). Columns Energy(c), Energy(o) (not monotonic), time/s, 1 (I0), 2 (signal), 3 (noise).
+Signal / I0 is an erf edge at 400.2 with sigma 0.3 (FWHM 0.706446). Use Energy(c) as X.
+synthetic_correction.txt: X-dependent correction factor = 1 + 0.01*(E - 400) for E = 390 ... 410.
